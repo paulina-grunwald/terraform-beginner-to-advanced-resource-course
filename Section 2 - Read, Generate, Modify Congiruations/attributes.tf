@@ -3,9 +3,10 @@ provider "aws" {
   access_key = "YOUR-ACCESS-KEY"
   secret_key = "YOUR-SECRET-KEY"
 }
+
 resource "aws_instance" "myec2" {
   ami           = "ami-082b5a644766e0e6f"
-  instance_type = "t2.micro"
+  instance_type = var.instancetype
 }
 
 resource "aws_eip" "lb" {
@@ -30,17 +31,22 @@ resource "aws_security_group" "allow_tls" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["${aws_eip.lb.public_ip}/32"]
+    cidr_blocks = [var.vpn_ip]
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.vpn_ip]
   }
 
   tags = {
     Name = "allow_tls"
   }
+}
+
+resource "aws_iam_user" "lb" {
+  name = var.usernumber
+  path = "/system"
 }
